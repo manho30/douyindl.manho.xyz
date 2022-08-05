@@ -1,0 +1,57 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>抖音无水印视频下载</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <!-- background with dark mode-->
+    <body class="bg-gray-900 text-white">
+        <h1 class="mt-20 text-3xl font-semibold text-center decoration-teal-400">
+            抖音无水印视频下载
+        </h1>
+        
+        <!-- make a input field, and stay away 15px far from h1 title-->
+        <input class="mt-7 shadow appearance-none border rounded-full w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Place the link here" id="url">
+        
+        <!-- make a download button and cancel button in same row with distance-->
+        <div class="flex item-center justify-center mt-5">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 focus: outline-none focus:shadow-outline" id="download">
+                Download
+            </button>
+            <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mx-2 focus: outline-none focus:shadow-outline" id="cancel">
+                Cancel
+            </button>
+            
+            <script>
+                document.querySelector('#cancel').addEventListener('click', function() {
+                    window.location.reload();
+                });
+                document.querySelector('#download').addEventListener('click', function() {
+                    var url = document.querySelector('#url').value;
+                    if (url.length == 0) {
+                        alert('Please input a link');
+                        return;
+                    }
+                    window.location.href = `https://douyinapi.herokuapp.com/api/v2?url=${url}`;
+                    
+                });
+            </script>
+        </div>
+        <p class="text-center text-teal-500 text-xs mt-10">
+            &copy; 2020 <a href="blog.manho30.me">Man Ho</a> all right reserved
+        </p>
+        <footer class="grid gap-6 px-3 pt-24 pb-12 text-gray-500 dark:text-gray-400">
+            <div class="text-sm md:text-base md:leading-6 font-light dark:text-gray-300 text-center" data-v-fad05af8="">
+                Source code is available on <a href="https://github.com/manho30/douyinDownloader" class="text-gray-500 dark:text-gray-400" data-v-fad05af8="">GitHub</a>
+            </div>
+            <div class="mp-20 text-sm md:text-base md:leading-6 font-light dark:text-gray-300 text-center" data-v-fad05af8="">
+                For Backend API source code are now open on <a href="https://douyinapi.manho30.me/" class=text-gray-500 dark:text-gray-400" data-v-fad05af8="">Here</a>
+            </div>
+            
+            <div class="text-sm text-center">
+               © 2022 Man Ho. All right reserved
+            </div>
+        </footer>
+    </body>
+</html>
