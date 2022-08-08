@@ -34,7 +34,7 @@
                     }
                     const regex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/gm
                     const destination = regex.exec(url)
-                    if (!destination[0] || destination[0].join().indexOf('douyin') < 0){
+                    if (!destination[0] || destination[0].toString().indexOf('douyin') < 0){
                         alert('Invalid URL')
                     } 
                     window.location.href = `https://douyinapi.herokuapp.com/api/v2?url=${destination[0]}`;
