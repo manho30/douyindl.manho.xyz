@@ -36,6 +36,7 @@
                     const destination = regex.exec(url)
                     if (!destination[0] || destination[0].toString().indexOf('douyin') < 0){
                         alert('Invalid URL')
+                        return;
                     } 
                     window.location.href = `https://douyinapi.herokuapp.com/api/v2?url=${destination[0]}`;
                     
