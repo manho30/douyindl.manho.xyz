@@ -26,14 +26,14 @@
                 document.querySelector('#cancel').addEventListener('click', function() {
                     window.location.reload();
                 });
-                function getURlQuery() {
+                function getURLQuery() {
                     const params = new Proxy(new URLSearchParams(window.location.search), {
                         get: (searchParams, prop) => searchParams.get(prop),
                     });
                     return params.url;
                 }
                 (() => {
-                    query = getUrlQuery()
+                    query = getURLQuery()
                     if(query && query.indexOf('douyin') >= 0) {
                     alert(`We found URL!\n${query}`);
                     document.getElementById("url").value = query;
