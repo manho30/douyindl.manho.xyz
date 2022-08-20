@@ -26,17 +26,19 @@
                 document.querySelector('#cancel').addEventListener('click', function() {
                     window.location.reload();
                 });
-
-                const params = new Proxy(new URLSearchParams(window.location.search), {
-                    get: (searchParams, prop) => searchParams.get(prop),
-                });
-                // Get the value of "url" in eg "https://douyindl.manho30.me/?url=value"
-                let query = params.url;
-
-                if(query && query.indexOf('douyin') >= 0){
-                    alert(`We found URL!\n${query}`)
-                } 
-
+                function getURlQuery() {
+                    const params = new Proxy(new URLSearchParams(window.location.search), {
+                        get: (searchParams, prop) => searchParams.get(prop),
+                    });
+                    return params.url;
+                }
+                (() => {
+                    query = getUrlQuery()
+                    if(query && query.indexOf('douyin') >= 0) {
+                    alert(`We found URL!\n${query}`);
+                    document.getElementById("url").value = query;
+                    } 
+                })()
                 document.querySelector('#download').addEventListener('click', function() {
                     var url = document.querySelector('#url').value;
                     if (url.length == 0) {
