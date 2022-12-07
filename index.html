@@ -5,15 +5,11 @@
         <title>抖音无水印视频下载</title>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <!-- background with dark mode-->
     <body class="bg-gray-900 text-white">
         <h1 class="mt-20 text-3xl font-semibold text-center decoration-teal-400">
             抖音无水印视频下载
         </h1>
-        <!-- make a input field, and stay away 15px far from h1 title-->
         <input class="mt-7 shadow appearance-none border rounded-full w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Place the link here" id="url">
-        
-        <!-- make a download button and cancel button in same row with distance-->
         <div class="flex item-center justify-center mt-5">
             <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 focus: outline-none focus:shadow-outline" id="download">
                 Download
@@ -21,24 +17,26 @@
             <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mx-2 focus: outline-none focus:shadow-outline" id="cancel">
                 Cancel
             </button>
-            
             <script>
                 document.querySelector('#cancel').addEventListener('click', function() {
                     window.location.reload();
                 });
+                
                 function getURLQuery() {
                     const params = new Proxy(new URLSearchParams(window.location.search), {
                         get: (searchParams, prop) => searchParams.get(prop),
                     });
                     return params.url;
                 }
-                (() => {
-                    query = getURLQuery()
+
+                // windows onload
+                window.onload = () => {
+                    const query = getURLQuery()
                     if(query && query.indexOf('douyin') >= 0) {
-                    alert(`We found URL!\n${query}`);
-                    document.getElementById("url").value = query;
-                    } 
-                })()
+                        document.getElementById("url").value = query;
+                        document.getElementById("download").click();
+                    }
+                }
                 document.querySelector('#download').addEventListener('click', function() {
                     var url = document.querySelector('#url').value;
                     if (url.length == 0) {
@@ -50,10 +48,20 @@
                     if (!destination || !destination[0] || destination[0].toString().indexOf('douyin') < 0){
                         alert('Invalid URL')
                         return;
-                    } 
-                    window.location.href = `https://douyinapi.herokuapp.com/api/v2?url=${destination[0]}`;
-                    
-                });
+                    }
+                    if (url.indexOf('user') >= 0) {
+                        alert('Batch download is not supported yet');
+                        return;
+                    }
+
+                    fetch(`https://douyinapis.manho30.me/id?link=${url}`).then((res) => {return res.json()}).then((res) => {
+                        if (res.status == 200){
+                            fetch(`https://douyinapis.manho30.me/download?id=${res.result}`).then((resp) => {return resp.json()}).then(function (resp){
+                                resp.status == 200 ? window.location.href = resp.result : alert(resp.result);
+                            })
+                        }
+                    })
+                })
             </script>
         </div>
         <p class="text-center text-red-500 text-xs mt-10">
@@ -67,7 +75,7 @@
                 Source code is available on <a href="https://github.com/manho30/douyinDownloader" class="text-gray-500 dark:text-gray-400" data-v-fad05af8="">GitHub</a>
             </div>
             <div class="mp-20 text-sm md:text-base md:leading-6 font-light dark:text-gray-300 text-center" data-v-fad05af8="">
-                For Backend API source code are now open on <a href="https://douyinapi.manho30.me/" class=text-gray-500 dark:text-gray-400" data-v-fad05af8="">Here</a>
+                For Backend API source code are now open on <a href="https://douyinapi.manho30.me/" class=text-gray-500  data-v-fad05af8="">Here</a>
             </div>
             
             <div class="text-sm text-center text-teal-300">
