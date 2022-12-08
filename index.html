@@ -17,6 +17,7 @@
             <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mx-2 focus: outline-none focus:shadow-outline" id="cancel">
                 Cancel
             </button>
+
             <script>
                 document.querySelector('#cancel').addEventListener('click', function() {
                     window.location.reload();
@@ -38,6 +39,10 @@
                     }
                 }
                 document.querySelector('#download').addEventListener('click', function() {
+                    document.getElementById("title").innerHTML = "";
+                    document.getElementById("thumbnail").src = "";
+                    document.getElementById("watermark").innerHTML = "";
+                    document.getElementById("no_watermark").innerHTML = "";
                     var url = document.querySelector('#url').value;
                     if (url.length == 0) {
                         alert('Please input a link');
@@ -57,20 +62,37 @@
                     fetch(`https://douyinapis.manho30.me/id?link=${url}`).then((res) => {return res.json()}).then((res) => {
                         if (res.status == 200){
                             fetch(`https://douyinapis.manho30.me/download?id=${res.result}`).then((resp) => {return resp.json()}).then(function (resp){
-                                resp.status == 200 ? window.location.href = resp.result : alert(resp.result);
-                            })
+                                if (resp.status == 200){
+                                    document.getElementById("title").innerHTML = resp.result.video.descriptions;
+                                    document.getElementById("thumbnail").src = resp.result.video.thumbnail_url.url_list;
+                                    document.getElementById("no_watermark").innerHTML = `<a href="${resp.result.video.video_url.free_watermark_1080p}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 focus: outline-none focus:shadow-outline">No Watermark</a>`;
+                                    document.getElementById("watermark").innerHTML = `<a href="${resp.result.video.video_url.watermark_url}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 focus: outline-none focus:shadow-outline">Watermark</a>`;
+                                } else {
+                                    alert(resp.message);
+                                }
+                            });
                         }
                     })
                 })
             </script>
         </div>
-        <p class="text-center text-red-500 text-xs mt-10">
+        <div id="result">
+            <div id="title" class="my-8 text-center text-white-500 text-xl mt-10"></div>
+            <img id="thumbnail" class="rounded mx-auto d-block mb-3">
+            <div id='dllist' class='mb-10 my-5 flex flex-wrap text-gray-500 border-gray-200 dark:border-gray-700 dark:text-gray-400 md:flex mt-4 space-x-6 justify-center'>
+                <div id="watermark"></div>
+                <div id="no_watermark"></div>
+            </div>
+        </div>
+        <!-- draw a horizontal line -->
+        <hr class="border-gray-800">
+        <p class="text-center text-red-500 text-xs mt-6">
             Do not abuse this service. This site was fully protected by <a href="https://cloudflare.com" class="text-yellow-500">Cloudflare</a>
         </p>
         <p class="text-center text-red-500 text-xs mt-3">
             Web crawlers are not allowed to use this service.
         </p>
-        <footer class="grid gap-6 px-3 pt-24 pb-12 text-gray-500 dark:text-gray-400">
+        <div class="grid gap-6 px-3 pt-24 pb-12 text-gray-500 dark:text-gray-400">
             <div class="text-sm md:text-base md:leading-6 font-light dark:text-gray-300 text-center" data-v-fad05af8="">
                 Source code is available on <a href="https://github.com/manho30/douyinDownloader" class="text-gray-500 dark:text-gray-400" data-v-fad05af8="">GitHub</a>
             </div>
@@ -81,6 +103,6 @@
             <div class="text-sm text-center text-teal-300">
                © 2022 Man Ho. All right reserved
             </div>
-        </footer>
+        </div>
     </body>
 </html>
