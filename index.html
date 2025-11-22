@@ -46,8 +46,8 @@
             const thumbnail = document.getElementById("thumbnail");
             thumbnail.src = "";
             thumbnail.alt = "";
-            document.getElementById("watermark").innerHTML = "";
-            document.getElementById("no_watermark").innerHTML = "";
+            document.getElementById("watermark").replaceChildren();
+            document.getElementById("no_watermark").replaceChildren();
             
             var url = document.querySelector('#url').value;
             if (url.length == 0) {
@@ -87,7 +87,7 @@
                     throw new Error('Invalid response from server');
                 }
                 
-                if (idData.status == 200 && idData.result){
+                if (idData.status === 200 && idData.result){
                     const videoResponse = await fetch(`https://douyinapis.manho30.me/download?id=${encodeURIComponent(idData.result)}`);
                     
                     if (!videoResponse.ok) {
@@ -101,7 +101,7 @@
                         throw new Error('Invalid response from server');
                     }
                     
-                    if (videoData.status == 200 && videoData.result && videoData.result.video){
+                    if (videoData.status === 200 && videoData.result && videoData.result.video){
                         const video = videoData.result.video;
                         
                         // Set title using textContent (safe from XSS)
