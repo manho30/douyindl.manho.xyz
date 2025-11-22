@@ -2,6 +2,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' https: data:; connect-src 'self' https://douyinapis.manho30.me; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
     <title>抖音无水印视频下载</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -10,11 +11,12 @@
     抖音无水印视频下载
 </h1>
 <input class="mt-7 shadow appearance-none border rounded-full w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Place the link here" id="url">
-<div class="flex item-center justify-center mt-5">
-    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 focus: outline-none focus:shadow-outline" id="download">
+<div class="flex items-center justify-center mt-5">
+    <button type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 focus:outline-none focus:shadow-outline" id="download">
         Download
     </button>
-    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mx-2 focus: outline-none focus:shadow-outline" id="cancel">
+    <span id="loading" class="text-yellow-400 mx-2 hidden">Loading...</span>
+    <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mx-2 focus:outline-none focus:shadow-outline" id="cancel">
         Cancel
     </button>
 
@@ -38,11 +40,15 @@
                 document.getElementById("download").click();
             }
         }
-        document.querySelector('#download').addEventListener('click', function() {
-            document.getElementById("title").innerHTML = "";
-            document.getElementById("thumbnail").src = "";
-            document.getElementById("watermark").innerHTML = "";
-            document.getElementById("no_watermark").innerHTML = "";
+        document.querySelector('#download').addEventListener('click', async function() {
+            // Clear previous results
+            document.getElementById("title").textContent = "";
+            const thumbnail = document.getElementById("thumbnail");
+            thumbnail.src = "";
+            thumbnail.alt = "";
+            document.getElementById("watermark").replaceChildren();
+            document.getElementById("no_watermark").replaceChildren();
+            
             var url = document.querySelector('#url').value;
             if (url.length == 0) {
                 alert('Please input a link');
@@ -59,26 +65,102 @@
                 return;
             }
 
-            fetch(`https://douyinapis.manho30.me/id?link=${url}`).then((res) => {return res.json()}).then((res) => {
-                if (res.status == 200){
-                    fetch(`https://douyinapis.manho30.me/download?id=${res.result}`).then((resp) => {return resp.json()}).then(function (resp){
-                        if (resp.status == 200){
-                            document.getElementById("title").innerHTML = resp.result.video.descriptions;
-                            document.getElementById("thumbnail").src = resp.result.video.thumbnail_url.url_list;
-                            document.getElementById("no_watermark").innerHTML = `<a href="${resp.result.video.video_url.free_watermark_1080p}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 focus: outline-none focus:shadow-outline">No Watermark</a>`;
-                            document.getElementById("watermark").innerHTML = `<a href="${resp.result.video.video_url.watermark_url}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 focus: outline-none focus:shadow-outline">Watermark</a>`;
-                        } else {
-                            alert(resp.message);
-                        }
-                    });
+            // Enable loading state
+            const downloadBtn = document.getElementById('download');
+            const loadingIndicator = document.getElementById('loading');
+            downloadBtn.disabled = true;
+            loadingIndicator.classList.remove('hidden');
+
+            try {
+                // Encode URL parameter properly
+                const encodedUrl = encodeURIComponent(url);
+                const idResponse = await fetch(`https://douyinapis.manho30.me/id?link=${encodedUrl}`);
+                
+                if (!idResponse.ok) {
+                    throw new Error(`HTTP error! status: ${idResponse.status}`);
                 }
-            })
+                
+                const idData = await idResponse.json();
+                
+                // Validate response structure
+                if (!idData || typeof idData.status !== 'number') {
+                    throw new Error('Invalid response from server');
+                }
+                
+                if (idData.status === 200 && idData.result){
+                    const videoResponse = await fetch(`https://douyinapis.manho30.me/download?id=${encodeURIComponent(idData.result)}`);
+                    
+                    if (!videoResponse.ok) {
+                        throw new Error(`HTTP error! status: ${videoResponse.status}`);
+                    }
+                    
+                    const videoData = await videoResponse.json();
+                    
+                    // Validate nested response structure
+                    if (!videoData || typeof videoData.status !== 'number') {
+                        throw new Error('Invalid response from server');
+                    }
+                    
+                    if (videoData.status === 200 && videoData.result && videoData.result.video){
+                        const video = videoData.result.video;
+                        
+                        // Set title using textContent (safe from XSS)
+                        if (video.descriptions) {
+                            document.getElementById("title").textContent = video.descriptions;
+                        }
+                        
+                        // Set thumbnail with proper URL handling and alt text
+                        if (video.thumbnail_url && video.thumbnail_url.url_list) {
+                            const thumbnailUrl = Array.isArray(video.thumbnail_url.url_list) 
+                                ? video.thumbnail_url.url_list[0] 
+                                : video.thumbnail_url.url_list;
+                            thumbnail.src = thumbnailUrl || '';
+                            thumbnail.alt = video.descriptions || 'Video thumbnail';
+                        }
+                        
+                        // Create download links safely using DOM APIs
+                        const watermarkContainer = document.getElementById("watermark");
+                        const noWatermarkContainer = document.getElementById("no_watermark");
+                        
+                        if (video.video_url && video.video_url.watermark_url) {
+                            const watermarkLink = document.createElement('a');
+                            watermarkLink.href = video.video_url.watermark_url;
+                            watermarkLink.textContent = 'Watermark';
+                            watermarkLink.className = 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 focus:outline-none focus:shadow-outline';
+                            watermarkLink.rel = 'noopener noreferrer';
+                            watermarkLink.target = '_blank';
+                            watermarkContainer.appendChild(watermarkLink);
+                        }
+                        
+                        if (video.video_url && video.video_url.free_watermark_1080p) {
+                            const noWatermarkLink = document.createElement('a');
+                            noWatermarkLink.href = video.video_url.free_watermark_1080p;
+                            noWatermarkLink.textContent = 'No Watermark';
+                            noWatermarkLink.className = 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 focus:outline-none focus:shadow-outline';
+                            noWatermarkLink.rel = 'noopener noreferrer';
+                            noWatermarkLink.target = '_blank';
+                            noWatermarkContainer.appendChild(noWatermarkLink);
+                        }
+                    } else {
+                        alert(videoData.message || 'Failed to fetch video data');
+                    }
+                } else {
+                    alert(idData.message || 'Failed to fetch video ID');
+                }
+            } catch (error) {
+                console.error('Error fetching video:', error);
+                alert('Network error or invalid response. Please try again.');
+            } finally {
+                // Disable loading state
+                downloadBtn.disabled = false;
+                loadingIndicator.classList.add('hidden');
+            }
         })
     </script>
 </div>
-<div id="result">
-    <div id="title" class="my-8 text-center text-white-500 text-xl mt-10"></div>
-    <img id="thumbnail" class="rounded mx-auto d-block mb-3">
+<div id="result" aria-live="polite">
+    <div id="title" class="my-8 text-center text-gray-500 text-xl mt-10"></div>
+    <img id="thumbnail" class="rounded mx-auto block mb-3" alt="">
     <div id='dllist' class='mb-10 my-5 flex flex-wrap text-gray-500 border-gray-200 dark:border-gray-700 dark:text-gray-400 md:flex mt-4 space-x-6 justify-center'>
         <div id="watermark"></div>
         <div id="no_watermark"></div>
